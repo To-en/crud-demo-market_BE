@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import { ingredients, bumpId } from '../models/ingredients.js';
+import { ingredients, bumpId } from '../models/ingredients.model.js';
 
 const router = Router();
 
+
+// Label
 const CATEGORIES = ["Grain", "Protein", "Vegetable", "Dairy", "Spice"];
 const UNITS      = ["kg", "g", "L", "ml", "pcs"];
 
@@ -11,7 +13,7 @@ router.get("/ingredients", (_req, res) => {
   res.json(ingredients);
 });
 
-// GET /crud/ingredients/:id — get one
+// GET /crud/ingredients/:id — get one ingredeitne 
 router.get("/ingredients/:id", (req, res) => {
   const item = ingredients.find((i) => i.id === Number(req.params.id));
   if (!item) return res.status(404).json({ error: "Ingredient not found" });
