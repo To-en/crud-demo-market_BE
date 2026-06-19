@@ -1,13 +1,15 @@
 const sequelize = require("../sequelize");
 const Sequelize = require("sequelize");
 
-const Market = require("./ingredients.model");
+const Ingre = require("./ingredients.model");
+const Order = require("./orders.model");
+const User = require("./users.model");
 
 // csm export compiled db
 const db = {
-  Market,
-  Carts,
-  Users,
+  Ingre,
+  Order,
+  User,
 };
 
 Object.keys(db).forEach((modelName) => {

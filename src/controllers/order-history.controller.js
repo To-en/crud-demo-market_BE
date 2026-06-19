@@ -1,35 +1,39 @@
-import { ingredients, bumpId } from '../models/ingredients.model';
+import { Op, Sequelize } from 'sequelize'
+import { models } from '../models/orders.model';
+// GET /api/history
+export function listOrders(_req, res) {
+  res.json(orders);
+}
 
-const CATEGORIES = ["Grain", "Protein", "Vegetable", "Dairy", "Spice"];
-const UNITS      = ["kg", "g", "L", "ml", "pcs"];
+// get report option for 
+async function getDropDownOptions(req, res) {
 
-
-// GET /api/ingre
-export function listIngredients(_req, res) {
-  res.json(ingredients);
+  try {
+    const [s, deviceTypes, events] = await Promise.all([
+      models.Site.findAll({ attributes: ["id", "siteName"], where: { deleteAt: null }, raw: true }),
+      models.DeviceType.findAll({ attributes: ["id", "deviceType"], raw: true }),
+      models.Event.findAll({ attributes: ["id", "displayName"], where: { deleteAt: null }, raw: true }),
+    ]);
+    res.status(200).json({
+      status: 200,
+      sites: sites.map((r) => ({ id: r.id, name: r.siteName })),
+      deviceTypes: deviceTypes.map((r) => ({ id: r.id, name: r.deviceType })),
+      events: events.map((r) => ({ id: r.id, name: r.displayName })),
+    });
+  } catch (err) {
+    console.error("500 Failed to fetch report options:", err);
+    res.status(500).json({ error: "Failed to fetch report options" });
+  }
 }
 
 // GET /api/ingre/id?value=[ , ... ]
 export function getIngredient(req, res) {
   // Extract proper param value for this one 
-
-  // Let's convert this to valid
-  const item = ingredients.find(i => i.id === Number(req.params.id));
+  const item = ingredients.find(i => i.id === Number(req.query.id));
   if (!item) return res.status(404).json({ error: "Ingredient not found" });
   res.json(item);
 }
 
-// POST /api/ingre/ 
-/**
-request JSON body
-{
-  "id": od,
-  "Name": od,
-  "price", od,
-  "Multiple" ,
-  ""
-}
- */
 export function createIngredient(req, res) {
   const { name, unit, stock, category } = req.body;
   if (!name || !unit || stock == null || !category)

@@ -1,3 +1,5 @@
+import { DataTypes } from "sequelize";
+import { sequelize } from ".";
 
 // Mock data
 export let ingredients = [
@@ -14,3 +16,25 @@ export let nextId = 9;
 export const bumpId = () => nextId++;
 
 // Models
+const user_model = sequelize.define(
+  "user",
+  {
+    id:{
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      allowNull: true
+    },
+    username:{
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    password:{
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    token:{
+      type: DataTypes.UUID,
+      allowNull: true
+    }
+  }
+);

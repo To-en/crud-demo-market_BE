@@ -1,6 +1,8 @@
+
 const { DataTypes } = require("sequelize");
 const sequelize = require("../sequelize"); // Import from this project sequelize source
-// --- Mock data
+
+// Mock data
 export let ingredients = [
   { id: 1, name: "Rice",           unit: "kg",  stock: 50, category: "Grain"     },
   { id: 2, name: "Egg",            unit: "pcs", stock: 200, category: "Protein"  },
@@ -13,10 +15,13 @@ export let ingredients = [
 ];
 export let nextId = 9;
 export const bumpId = () => nextId++;
+// for pumping to fake ingredient list , wait 
 
+
+// Models
 // --- Models
-const ingre_model = sequelize.define(
-  "ingredients",
+const order_model = sequelize.define(
+  "order_log",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -27,20 +32,20 @@ const ingre_model = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true
     },
-    unit: {
-      type: DataTypes.STRING,
-      allowNull: true
-    },
-    stock: {
+    ingreId: {
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    category: {
+    userId: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    unitPrice: {
-      type: DataTypes.FLOAT,
+    createDate: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+    lastModified: {
+      type: DataTypes.DATE,
       allowNull: true
     },
     deleteAt: {
@@ -55,9 +60,4 @@ const ingre_model = sequelize.define(
   },
 );
 
-// Model associatation with.. 
-// ingre_model.associate = (models) => {
-
-// };
-
-module.exports = ingre_model;
+module.exports  = order_model;

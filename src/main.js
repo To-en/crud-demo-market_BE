@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './swagger.js';
 import router from './routes';
 import sequelize from './sequelize';
 import { ingredients } from './models/ingredients.model';
@@ -13,6 +15,7 @@ app.use(cors(
 ));
 app.set("query parser", "extended");
 app.use(express.json());
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Default url routes
 app.get("/", (_req, res) => { res.send("Ingredient Market API"); });
 app.get("/health", (_req, res) => res.json({ status: "ok", ingredients: ingredients.length })); // health check should return health things

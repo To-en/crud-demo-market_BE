@@ -1,12 +1,11 @@
 import { Router } from 'express';
-import * as ingredientController from '../controllers/ingredient.controller';
-
+import * as ingreController from '../controllers/ingredient.controller';
 const router = Router();
 
-router.get('/',     ingredientController.listIngredients);
-router.get('/id',  ingredientController.getIngredient);
-router.post('/',    ingredientController.createIngredient);
-router.put('/id',  ingredientController.updateIngredient);
-router.delete('/id', ingredientController.deleteIngredient);
+router.get('/ingre',     ingreController.listIngredients);
+router.get('/ingre/id',  ingreController.getIngredient);
+router.post('/ingre/create',    ingreController.createIngredient);
+router.put('/ingre/id',  ingreController.updateIngredient);
+router.delete('/ingre/id', ingreController.deleteIngredient);
 
 export default router;

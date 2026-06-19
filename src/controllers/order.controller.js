@@ -1,8 +1,16 @@
-import { ingredients } from '../models/ingredients.model.js';
+import { ingredients } from '../models/ingredients.model';
+import { service } from '../services/order.service'
 
 // order id
 const orders = [];
 let nextOrderId = 1;
+
+// GET /api/history
+export function getOrder(req, res) {
+  const order = orders.find(o => o.id === Number(req.params.id));
+  if (!order) return res.status(404).json({ error: "Order not found" });
+  res.json(order);
+}
 
 // GET / 
 export function submitOrder(req, res) {
@@ -33,15 +41,6 @@ export function submitOrder(req, res) {
   res.status(201).json(order);
 }
 
-export function listOrders(_req, res) {
-  res.json(orders);
-}
-
-export function getOrder(req, res) {
-  const order = orders.find(o => o.id === Number(req.params.id));
-  if (!order) return res.status(404).json({ error: "Order not found" });
-  res.json(order);
-}
 
 export function updateOrderStatus(req, res) {
   const order = orders.find(o => o.id === Number(req.params.id));
@@ -52,8 +51,6 @@ export function updateOrderStatus(req, res) {
   order.status = status;
   res.json(order);
 }
-
-
 
 // Later plan to make a stripe API 
 // And make a user wallet class
