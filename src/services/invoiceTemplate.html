@@ -1,0 +1,42 @@
+<!-- invoice.template.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: 'Sarabun', sans-serif; padding: 40px; font-size: 14px; }
+    .header { display: flex; justify-content: space-between; margin-bottom: 24px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    th { background: #f0f0f0; padding: 8px; text-align: left; }
+    td { padding: 8px; border-bottom: 1px solid #ddd; }
+    .totals { text-align: right; margin-top: 16px; }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h2>โรงเรียน{{schoolName}}</h2>
+      <p>แผนก{{department}}</p>
+    </div>
+    <div>
+      <h3>ใบสั่งวัตถุดิบ</h3>
+      <p>เลขที่: {{invoiceNo}}</p>
+      <p>วันที่: {{date}}</p>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>#</th><th>รายการ</th><th>จำนวน</th><th>หน่วย</th><th>ราคา/หน่วย</th><th>รวม</th></tr>
+    </thead>
+    <tbody>
+      {{rows}}
+    </tbody>
+  </table>
+
+  <div class="totals">
+    <p>รวมทั้งสิ้น: {{total}} บาท</p>
+  </div>
+</body>
+</html>

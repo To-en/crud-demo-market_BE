@@ -1,9 +1,9 @@
-const dotenv = require("dotenv");
-const dotenvExpand = require("dotenv-expand");
-const myEnv = dotenv.config(); // Load env
-dotenvExpand.expand(myEnv); // expand env variable self-reference
+import dotenv from "dotenv";
+import dotenvExpand from "dotenv-expand";
+const myEnv = dotenv.config();
+dotenvExpand.expand(myEnv);
 
-module.exports = {
+export default {
   log: {
     level: process.env.LOG_LEVEL || "info",
   },
@@ -12,14 +12,15 @@ module.exports = {
     url: process.env.DATABASE_URL,
     logging: process.env.DATABASE_LOGGING === "true",
   },
-  // minio: {
-  //   endpoint: process.env.MINIO_ENDPOINT || "127.0.0.1",
-  //   port: Number(process.env.MINIO_PORT) || 9000,
-  //   useSSL: process.env.MINIO_USE_SSL === "true",
-  //   accessKey: process.env.MINIO_ACCESS_KEY,
-  //   secretKey: process.env.MINIO_SECRET_KEY,
-  // },
-  assets: {
-    path: process.env.ASSETS_PATH || __dirname + "/assets",
+  supabase: {
+    url: process.env.SUPABASE_URL,
+    service_key: process.env.SUPABASE_SERVICE_KEY, 
+    bucket_name: process.env.SUPABASE_BUCKET
+  },
+  jwtsecret: {
+    access: process.env.JWT_SECRET,
+    accessExpire: process.env.JWT_ACCESS_EXP,
+    refresh: process.env.JWT_REFRESH_SECRET,
+    refreshExpire: process.env.JWT_REFRESH_EXP,
   },
 };

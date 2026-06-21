@@ -1,15 +1,12 @@
-const sequelize = require("../sequelize");
-const Sequelize = require("sequelize");
+import sequelize from '../sequelize';
+import Ingre from './ingredient.model';
+import Order from './order.model';
+import User from './user.model';
 
-const Ingre = require("./ingredients.model");
-const Order = require("./orders.model");
-const User = require("./users.model");
-
-// csm export compiled db
 const db = {
   Ingre,
   Order,
-  User,
+  User
 };
 
 Object.keys(db).forEach((modelName) => {
@@ -19,6 +16,5 @@ Object.keys(db).forEach((modelName) => {
 });
 
 db.sequelize = sequelize;
-db.Sequelize = Sequelize;
 
-module.exports = db;
+export default db;

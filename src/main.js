@@ -16,9 +16,9 @@ app.use(cors(
 app.set("query parser", "extended");
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-// Default url routes
 app.get("/", (_req, res) => { res.send("Ingredient Market API"); });
 app.get("/health", (_req, res) => res.json({ status: "ok", ingredients: ingredients.length })); // health check should return health things
+
 // API Endpoint routes
 app.use("/api", router);
 app.listen(PORT, () => { console.log(`"--- Listening to http://localhost:${PORT} ---"`); });

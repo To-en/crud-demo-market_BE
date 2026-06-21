@@ -1,55 +1,55 @@
 import { Op, Sequelize } from 'sequelize'
-import { models } from '../models/orders.model';
-// GET /api/history
-export function listOrders(_req, res) {
-  res.json(orders);
-}
+import models from '../models';
+import * as service from '../services/order-history.service'
 
-// get report option for 
-async function getDropDownOptions(req, res) {
-
+// GET /order/history
+export async function listOrders(req, res) {
   try {
-    const [s, deviceTypes, events] = await Promise.all([
-      models.Site.findAll({ attributes: ["id", "siteName"], where: { deleteAt: null }, raw: true }),
-      models.DeviceType.findAll({ attributes: ["id", "deviceType"], raw: true }),
-      models.Event.findAll({ attributes: ["id", "displayName"], where: { deleteAt: null }, raw: true }),
-    ]);
-    res.status(200).json({
-      status: 200,
-      sites: sites.map((r) => ({ id: r.id, name: r.siteName })),
-      deviceTypes: deviceTypes.map((r) => ({ id: r.id, name: r.deviceType })),
-      events: events.map((r) => ({ id: r.id, name: r.displayName })),
+    const orders = await models.Order.findAll({
+      attributes: ['id', 'name', 'ingreId'],
+      where: { userId: req.user.id },
+      order: [['createDate', 'DESC']],
     });
-  } catch (err) {
-    console.error("500 Failed to fetch report options:", err);
-    res.status(500).json({ error: "Failed to fetch report options" });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch orders" });
   }
 }
 
-// GET /api/ingre/id?value=[ , ... ]
-export function getIngredient(req, res) {
-  // Extract proper param value for this one 
-  const item = ingredients.find(i => i.id === Number(req.query.id));
-  if (!item) return res.status(404).json({ error: "Ingredient not found" });
-  res.json(item);
+// GET /order/history/search?value=
+export async function searchOrder(req, res) {
+  const { value } = req.query;
+  if (!value) return res.status(400).json({ error: "query param 'value' required" });
+
+  const numericId = Number(value);
+  const whereClause = {
+    userId: req.user.id,
+    [Op.or]: [
+      { name: { [Op.iLike]: `%${value}%` } },
+      ...(Number.isInteger(numericId) && numericId > 0 ? [{ id: numericId }] : []),
+    ],
+  };
+
+  try {
+    const orders = await models.Order.findAll({
+      attributes: ['id', 'name', 'ingreId'],
+      where: whereClause,
+      order: [['createDate', 'DESC']],
+    });
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: "Search failed" });
+  }
 }
 
-export function createIngredient(req, res) {
-  const { name, unit, stock, category } = req.body;
-  if (!name || !unit || stock == null || !category)
-    return res.status(400).json({ error: "name, unit, stock, category required" });
-  if (!CATEGORIES.includes(category))
-    return res.status(400).json({ error: `category must be one of: ${CATEGORIES.join(", ")}` });
-  if (!UNITS.includes(unit))
-    return res.status(400).json({ error: `unit must be one of: ${UNITS.join(", ")}` });
+// GET /ingre/id?value=[ ,...]
+export function reuseOrder(req, res) {
 
-  const item = { id: bumpId(), name, unit, stock: Number(stock), category };
-  ingredients.push(item);
-  res.status(201).json(item);
-}
+  // extract the parameter container orderId
 
-// PUT /api/ingre/id?value=[ ,...]
-export function updateIngredient(req, res) {
+  // scaffold ingredient id array use that orderId, sents the array back as 
+  // response , and use the frontend 
+
   const idx = ingredients.findIndex(i => i.id === Number(req.params.id));
   if (idx === -1) return res.status(404).json({ error: "Ingredient not found" });
   const { name, unit, stock, category } = req.body;
@@ -60,10 +60,37 @@ export function updateIngredient(req, res) {
   res.json(ingredients[idx]);
 }
 
+
+
 // DEL /api/ingre/id?value=[ ,... ]
-export function deleteIngredient(req, res) {
+export async function deleteOrder(req, res) {
   const idx = ingredients.findIndex(i => i.id === Number(req.params.id));
   if (idx === -1) return res.status(404).json({ error: "Ingredient not found" });
   const removed = ingredients.splice(idx, 1)[0];
   res.json({ message: "Deleted", ingredient: removed });
+}  
+
+
+
+// GET /history/:id
+export async function openOrderBill(_req, res) {
+  // select from that id and show all rows in json
+  res.json(ingredients);
 }
+
+
+
+// GET /api/ingre/:id/export
+export async function exportOrderBill(req, res) {
+  
+  // extract GET parameter with th 
+  const orderId = req.params.id
+  
+  // call .csv parsing logic (csv when open in excel always parse auto convert)
+
+  // call pdf parsing logic
+
+
+  res.status(200).json(item);
+}  
+

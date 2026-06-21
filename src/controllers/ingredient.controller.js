@@ -1,16 +1,16 @@
-import { ingredients, bumpId } from '../models/ingredients.model';
+import { ingredients, bumpId } from '../models';
 
 const CATEGORIES = ["Grain", "Protein", "Vegetable", "Dairy", "Spice"];
 const UNITS      = ["kg", "g", "L", "ml", "pcs"];
 
 
 // GET /api/ingre
-export function listIngredients(_req, res) {
+export async function listIngredients(_req, res) {
   res.json(ingredients);
 }
 
 // GET /api/ingre/id?value=[ , ... ]
-export function getIngredient(req, res) {
+export async function getIngredient(req, res) {
   // Extract proper param value for this one 
 
   // Let's convert this to valid
@@ -23,14 +23,14 @@ export function getIngredient(req, res) {
 /**
 request JSON body
 {
-  "id": od,
-  "Name": od,
-  "price", od,
-  "Multiple" ,
-  ""
+  "id":     od,
+  "Name":   od,
+  "qty":    od,
+  "price":  od,
+  "vendor": od,
 }
  */
-export function createIngredient(req, res) {
+export async function createIngredient(req, res) {
   const { name, unit, stock, category } = req.body;
   if (!name || !unit || stock == null || !category)
     return res.status(400).json({ error: "name, unit, stock, category required" });
@@ -45,7 +45,7 @@ export function createIngredient(req, res) {
 }
 
 // PUT /api/ingre/id?value=[ ,...]
-export function updateIngredient(req, res) {
+export async function updateIngredient(req, res) {
   const idx = ingredients.findIndex(i => i.id === Number(req.params.id));
   if (idx === -1) return res.status(404).json({ error: "Ingredient not found" });
   const { name, unit, stock, category } = req.body;
@@ -57,7 +57,7 @@ export function updateIngredient(req, res) {
 }
 
 // DEL /api/ingre/id?value=[ ,... ]
-export function deleteIngredient(req, res) {
+export async function deleteIngredient(req, res) {
   const idx = ingredients.findIndex(i => i.id === Number(req.params.id));
   if (idx === -1) return res.status(404).json({ error: "Ingredient not found" });
   const removed = ingredients.splice(idx, 1)[0];
