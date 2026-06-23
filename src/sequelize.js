@@ -1,6 +1,6 @@
-const { Sequelize } = require("sequelize");
-const config = require("./config");
-const logger = require("./logger")(__filename);
+import { Sequelize } from 'sequelize';
+import config from './config.js';
+import logger from './logger.js';
 
 const sequelize = new Sequelize(config.database.url, {
   logging: config.database.logging
@@ -10,4 +10,4 @@ const sequelize = new Sequelize(config.database.url, {
     : false,
 });
 
-module.exports = sequelize;
+export default sequelize;

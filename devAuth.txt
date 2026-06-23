@@ -1,0 +1,12 @@
+# Type the below in a separated terminal after npm run start to gain admin access
+
+node -e "
+import Jwt from 'jsonwebtoken';
+console.log(Jwt.sign({ id: 1, role: 2 }, '7g/2RFlaizjRU+PdQIHnTDiAyb0IhOOHjBE+kvK0fPk=', { expiresIn: '365d' }))
+"
+
+
+วิธีการ set auth key สำหรับ dev โดยเฉพาะ
+
+DEV_TOKEN = supersecret-dev-only-abc123
+

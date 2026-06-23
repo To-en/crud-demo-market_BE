@@ -1,15 +1,169 @@
+/**
+ * @swagger
+ * tags:
+ *   - name: Ingredients
+ *     description: Browse and manage ingredients. Mounted at /api/ingredient
+ *
+ * /api/ingredient:
+ *   get:
+ *     tags: [Ingredients]
+ *     summary: List all ingredients (paginated)
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, example: 1 }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, example: 15, maximum: 100 }
+ *     responses:
+ *       200:
+ *         description: Paginated ingredient list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total: { type: integer }
+ *                 page:  { type: integer }
+ *                 limit: { type: integer }
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Ingredient'
+ *
+ * /api/ingredient/search:
+ *   get:
+ *     tags: [Ingredients]
+ *     summary: Search/filter ingredients
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema: { type: string }
+ *         description: Name keyword (case-insensitive)
+ *       - in: query
+ *         name: category
+ *         schema: { type: string, enum: [Grain, Protein, Vegetable, Dairy, Spice] }
+ *       - in: query
+ *         name: inStock
+ *         schema: { type: boolean }
+ *         description: Pass true to show only in-stock items
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, example: 1 }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, example: 15, maximum: 100 }
+ *     responses:
+ *       200:
+ *         description: Matching ingredients
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total: { type: integer }
+ *                 page:  { type: integer }
+ *                 limit: { type: integer }
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Ingredient'
+ *
+ * /api/ingredient/create:
+ *   post:
+ *     tags: [Ingredients]
+ *     summary: Create ingredient (admin only)
+ *     security: [{ bearerAuth: [] }]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, unit, stock, category]
+ *             properties:
+ *               name:     { type: string, example: Garlic }
+ *               unit:     { type: string, enum: [kg, g, L, ml, pcs] }
+ *               stock:    { type: integer, example: 50 }
+ *               category: { type: string, enum: [Grain, Protein, Vegetable, Dairy, Spice] }
+ *     responses:
+ *       201:
+ *         description: Created ingredient
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Ingredient'
+ *       400:
+ *         description: Missing required field or invalid unit/category value
+ *
+ * /api/ingredient/{id}:
+ *   put:
+ *     tags: [Ingredients]
+ *     summary: Update ingredient (admin only)
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, unit, stock, category]
+ *             properties:
+ *               name:     { type: string }
+ *               unit:     { type: string, enum: [kg, g, L, ml, pcs] }
+ *               stock:    { type: integer }
+ *               category: { type: string, enum: [Grain, Protein, Vegetable, Dairy, Spice] }
+ *     responses:
+ *       200:
+ *         description: Updated ingredient
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Ingredient'
+ *       400:
+ *         description: Missing required field
+ *       404:
+ *         description: Ingredient not found
+ *   delete:
+ *     tags: [Ingredients]
+ *     summary: Delete ingredient (admin only)
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: integer }
+ *     responses:
+ *       200:
+ *         description: Deleted — returns the removed ingredient for confirmation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:    { type: string, example: Deleted }
+ *                 ingredient: { $ref: '#/components/schemas/Ingredient' }
+ *       404:
+ *         description: Ingredient not found
+ */
 import { Router } from 'express';
-import * as ingreController from '../controllers/ingredient.controller';
+import { requireRole } from '../middleware/auth.middleware.js';
+import * as controller from '../controllers/ingredient.controller.js';
 const router = Router();
 
-// Public client Endpoint (Listing , querying)
-router.get('/ingredient',     ingreController.listIngredients);
-router.get('/ingredient/search',  ingreController.getIngredient);
+router.get('/ingredient',        controller.listIngredients);
+router.get('/ingredient/search', controller.getIngredients);
 
-// Protected route
-// -- Admin side route 
-router.post('/ingredient/create',    ingreController.createIngredient);
-router.put('/ingredient/id',  ingreController.updateIngredient);
-router.delete('/ingredient/id', ingreController.deleteIngredient);
+// --- Admin
+router.post('/ingredient/create',   requireRole(2), controller.createIngredient);
+router.put('/ingredient/:id',       requireRole(2), controller.updateIngredient);
+router.delete('/ingredient/:id',    requireRole(2), controller.deleteIngredient);
 
 export default router;

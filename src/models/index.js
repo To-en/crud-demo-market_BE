@@ -1,19 +1,27 @@
-import sequelize from '../sequelize';
-import Ingre from './ingredient.model';
-import Order from './order.model';
-import User from './user.model';
+import sequelize from '../sequelize.js';
+import Ingre from './ingredients.model.js';
+import Order from './orders.model.js';
+import User from './users.model.js';
+import School from './school.model.js';
+import Nutrition from './nutritions.model.js';
 
 const db = {
   Ingre,
   Order,
-  User
+  User,
+  School,
+  Nutrition
 };
 
-Object.keys(db).forEach((modelName) => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-  }
-});
+// --- Foriegn key association
+
+// ingredients <-> nutrition_facts (asd)
+Ingre.hasOne(Nutrition, { foreignKey: 'ingredientId', onDelete: 'CASCADE' });
+Nutrition.belongsTo(Ingre, { foreignKey: 'ingredientId', onDelete: 'CASCADE' });
+
+// users <-> orders ()
+User.hasMany(Order, { foreignKey: 'userId' });
+Order.belongsTo(User, { foreignKey: 'userId' });
 
 db.sequelize = sequelize;
 

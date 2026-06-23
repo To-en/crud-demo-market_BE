@@ -1,12 +1,9 @@
 
-const path = require("path");
-const dayjs = require("dayjs");
-const { createLogger, transports, format, Logger } = require("winston");
-const config = require("./config");
-
-// without '/' it will just revert to it as default
-// So this log every request by timestamp in console log
-
+import path from "path";
+import { fileURLToPath } from "url";
+import dayjs from "dayjs";
+import { createLogger, transports, format } from "winston";
+import config from "./config.js";
 
 const customLevel = (level) => {
   switch (true) {
@@ -32,9 +29,13 @@ const customFormat = format.printf(({ level, message, label, timestamp }) => {
 /**
  *
  * @param {string} filename
- * @returns {Logger}
+ * @returns {import("winston").Logger}
  */
-module.exports = (filename) => {
+export default (filename) => {
+  const label = path.basename(
+    filename.startsWith("file://") ? fileURLToPath(filename) : filename,
+    ".js"
+  );
   const logger = createLogger({
     level: config.log.level,
     format: format.combine(
@@ -43,7 +44,7 @@ module.exports = (filename) => {
       format.splat(),
       customFormat,
     ),
-    defaultMeta: { label: path.basename(filename, ".js") },
+    defaultMeta: { label },
     transports: [new transports.Console()],
   });
   return logger;

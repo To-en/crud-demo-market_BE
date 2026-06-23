@@ -1,0 +1,97 @@
+-- Schema
+CREATE SCHEMA IF NOT EXISTS crud_market;
+
+-- =========================================
+-- TABLE: school
+-- Central budget pool managed by admin
+-- =========================================
+CREATE TABLE crud_market.school (
+	id          	SERIAL PRIMARY KEY,
+	budget      	INTEGER,
+	department  	VARCHAR(255),
+	CREATED_DATE 	TIMESTAMP,
+	LAST_MODIFIED TIMESTAMP,
+	DELETE_AT   	TIMESTAMP
+);
+
+-- =========================================
+-- TABLE: user
+-- Students and admins/teachers
+-- role: 0 = student, 1 = admin/teacher
+-- budget: individual allocated budget (distributed from school.budget)
+-- =========================================
+CREATE TABLE crud_market."users" (
+	id            SERIAL PRIMARY KEY,
+	username      VARCHAR(255),
+	password      VARCHAR(255),
+	class         VARCHAR(255),
+	role          SMALLINT,
+	refresh_token TEXT,
+	budget        INTEGER,
+	CREATED_DATE 	TIMESTAMP,
+	LAST_MODIFIED TIMESTAMP,
+	DELETE_AT   	TIMESTAMP
+);
+
+-- =========================================
+-- TABLE: ingredients
+-- Ingredient listings managed by admin
+-- =========================================
+
+CREATE TABLE crud_market."ingredients" (
+	id              SERIAL PRIMARY KEY,
+	name            VARCHAR(255),       -- ✅ keep
+	unit            VARCHAR(50),        -- ✅ keep
+	stock           INTEGER,            -- ✅ keep (app logic)
+	category        VARCHAR(100),       -- ✅ keep → map from OFF categories
+	unit_price      FLOAT,              -- ✅ keep (your own pricing)
+	image_url       VARCHAR(255),       -- ✅ keep → can pull from OFF image_url
+	barcode         TEXT,               -- traceability / supply chain
+	brand           VARCHAR(255),       -- nice for inventory source tracking
+	quantity        VARCHAR(100),       -- "500g", "1L" — package size
+	allergens       TEXT[],             -- useful for menu system later
+	labels          TEXT[],             -- halal, organic, etc.
+	ingredients_raw TEXT,               -- raw ingredient string (optional)
+	country_origin  VARCHAR(100),       -- sourcing context
+	off_id          TEXT,               -- reference back to OFF if needed
+	CREATED_DATE 		TIMESTAMP,
+	LAST_MODIFIED 	TIMESTAMP,
+	DELETE_AT   		TIMESTAMP
+);
+
+
+CREATE TABLE crud_market."nutrition_facts" (
+  id              SERIAL PRIMARY KEY,
+  ingredient_id   INT REFERENCES crud_market."ingredients"(id) ON DELETE CASCADE,
+  energy_kcal     NUMERIC,
+  fat_g           NUMERIC,
+  saturated_fat_g NUMERIC,
+  carbs_g         NUMERIC,
+  sugar_g         NUMERIC,
+  fiber_g         NUMERIC,
+  protein_g       NUMERIC,
+  salt_g          NUMERIC,
+  sodium_mg       NUMERIC,
+	CREATED_DATE 		TIMESTAMP,
+	LAST_MODIFIED 	TIMESTAMP,
+	DELETE_AT   		TIMESTAMP
+);
+
+-- =========================================
+-- TABLE: order
+-- Submitted orders from students
+-- ingre_id / qty are parallel arrays — ingre_id[i] matches qty[i]
+-- grand_total filled when order is confirmed by admin/teacher
+-- =========================================
+CREATE TABLE crud_market."orders" (
+	id            SERIAL PRIMARY KEY,
+	name          VARCHAR(255),
+	ingre_id      INTEGER[],
+	qty           INTEGER[],
+	grand_total   INTEGER,
+	status        SMALLINT,
+	user_id       INTEGER REFERENCES crud_market."users"(id) ON DELETE SET NULL,
+	CREATED_DATE 	TIMESTAMP,
+	LAST_MODIFIED TIMESTAMP,
+	DELETE_AT   	TIMESTAMP
+);

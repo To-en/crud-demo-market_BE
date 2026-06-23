@@ -1,61 +1,67 @@
-import { model } from '../models'
-import { service } from '../services/order.service'
+/**
+ * Deal with order that status has not been accepted ()
+ */
+import models from '../models/index.js';
+import * as service from '../services/budget.service.js';
+import { scopeQueryByClassroom } from '../services/order-history.service.js';
 
-// order id
-const orders = [];
-let nextOrderId = 1;
-
-
-// POST /order/create
+// POST /order/create → student submits an order (status stays pending)
+// Budget deduction deferred to confirmation — never deduct optimistically on create
 /** JSON BODY
 {
-  "key1": ["",""],
-  "key2": "",  
+  "name": "Monday Lunch",
+  "ingreId": [1, 2, 5],
+  "qty":     [2, 1, 3]
 }
 */
 export async function submitOrder(req, res) {
-  const { studentId, items } = req.body;
-  if (!studentId || !Array.isArray(items) || items.length === 0)
-    return res.status(400).json({ error: "studentId and items required" });
+  const { name, ingreId, qty } = req.body;
 
-  for (const { ingredientId, qty } of items) {
-    const ing = ingredients.find(i => i.id === ingredientId);
-    if (!ing) return res.status(404).json({ error: `Ingredient ${ingredientId} not found` });
-    if (ing.stock < qty) return res.status(400).json({ error: `${ing.name} insufficient stock` });
+  if (!name || !Array.isArray(ingreId) || !Array.isArray(qty) || ingreId.length === 0)
+    return res.status(400).json({ error: "name, ingreId[], qty[] required" });
+
+  if (ingreId.length !== qty.length)
+    return res.status(400).json({ error: "ingreId and qty must be the same length" });
+
+  try {
+    const grandTotal = await service.getGrandTotal(ingreId, qty);
+    const order = await models.Order.create({
+      name,
+      ingreId,
+      qty,
+      grandTotal,
+      userId: req.user.id,
+      createDate: new Date(),
+    });
+
+    res.status(201).json(order);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to create order" });
   }
-
-  for (const { ingredientId, qty } of items) {
-    ingredients.find(i => i.id === ingredientId).stock -= qty;
-  }
-
-
-  // Call budget calculation service
-    // THis must be async operation
-
-  // Session queue (Simulate DB)
-  const order = {
-    id: nextOrderId++, // always point to next 
-    studentId,
-    items,
-    placedAt: new Date().toISOString(),
-    status: 'pending',
-  };
-  orders.push(order);
-  res.status(201).json(
-    order // return order payload at least (Dev inspect)
-  );
-
 }
 
-// PATCH /order/:id/status
+// --- Teacher roles controller
+
+// PATCH /order/:id/status → teacher confirms or cancels a pending order
+// Only two valid transitions — confirmed deducts budget, cancelled leaves budget untouched
 export async function updateOrderStatus(req, res) {
-  const order = orders.find(o => o.id === Number(req.params.id));
-  if (!order) return res.status(404).json({ error: "Order not found" });
   const { status } = req.body;
+
   if (!['confirmed', 'cancelled'].includes(status))
     return res.status(400).json({ error: "status must be confirmed or cancelled" });
-  order.status = status;
-  res.json(order);
+
+  try {
+    const order = await models.Order.findOne(scopeQueryByClassroom(req.user, Number(req.params.id)));
+    if (!order) return res.status(404).json({ error: "Order not found" });
+
+    if (status === 'confirmed') {
+      // Deduct budget from student — grandTotal calculated inside service
+      await service.confirmAndDeductBudget(order);
+    }
+
+    await order.update({ status, lastModified: new Date() });
+    res.status(200).json(order);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update order status" });
+  }
 }
-
-
