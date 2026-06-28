@@ -6,7 +6,7 @@ import * as service from '../services/user.service.js';
 import { distributeBudget } from '../services/budget.service.js';
 
 
-// POST /api/login
+// POST /api/auth/login
 export async function userLogin(req, res) {
   const { username, password } = req.body;
   if (!username || !password)
@@ -24,14 +24,35 @@ export async function userLogin(req, res) {
     const role = service.assignRole(username);
     if (role === null)
       return res.status(403).json({ error: "Account type not recognized" });
-
+    
     const accessToken  = service.signAccessToken(dbUser.id, role);
     const refreshToken = await service.signRefreshToken(dbUser.id, role);
 
-    res.status(200).json({ accessToken, refreshToken });
+    res.status(200).json(
+      { userName: dbUser, 
+        role, 
+        accessToken, 
+        refreshToken });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+// POST /api/auth/logout
+// clear refresh token from userDB
+export async function userLogout(req, res) {
+
+  try {
+    const { refreshToken } = req.body; // or cookie
+    // delete the refresh token from the db
+    await models.User.update(
+      { refreshToken: null },
+      { where: { refreshToken } }
+    );
+    res.status(200).json({ message: "Logged out" });
+  } catch (err) {
+    res.status(500).json({ error: "Logout failed" });
   }
 }
 
@@ -52,18 +73,18 @@ export async function userRefresh(req, res) {
       return res.status(401).json({ error: "Invalid or revoked refresh token" });
 
     const accessToken = service.signAccessToken(dbUser.id, dbUser.role);
+    // Give back to renew accessToken to user
     res.status(200).json({ accessToken });
   } catch (err) {
     res.status(401).json({ error: "Refresh token expired or invalid" });
   }
 }
 
-
-// POST /api/login/register  (no UI — admin registers users manually)
+// POST /api/auth/register
 export async function userRegister(req, res) {
   const { username, password, classroom } = req.body;
-  if (!username || !password)
-    return res.status(400).json({ error: "username and password required" });
+  if (!username || !password || !classroom)
+    return res.status(400).json({ error: "username, password, and classroom required" });
 
   try {
     // Assign role and class
@@ -71,17 +92,45 @@ export async function userRegister(req, res) {
     if (role === null)
       return res.status(400).json({ error: "Username format not recognized" });
 
+    const existingUser = await models.User.findOne({ where: { username } });
+    if (existingUser)
+      return res.status(409).json({ error: "Username already registered" });
+
+    const classroomRecord = await models.School.findByPk(classroom);
+    if (!classroomRecord)
+      return res.status(400).json({ error: "Classroom not found" });
+
     const hashed = await bcrypt.hash(password, 10);
-    await models.User.create({
+    const dbUser = await models.User.create({
       username,
       password: hashed,
-      class:classroom,
+      class: classroomRecord.department,
       role
     });
 
-    res.status(201).json({ status: 201 });
+    const accessToken  = service.signAccessToken(dbUser.id, role);
+    const refreshToken = await service.signRefreshToken(dbUser.id, role);
+
+    res.status(201).json(
+      { userName: dbUser,
+        role,
+        accessToken,
+        refreshToken });
   } catch (err) {
     console.error('Register error:', err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+}
+
+export async function listClassrooms(_req, res) {
+  try {
+    const classrooms = await models.School.findAll({
+      attributes: ['id', ['department', 'name']],
+      order: [['department', 'ASC']]
+    });
+    res.status(200).json(classrooms);
+  } catch (err) {
+    console.error('Classroom list error:', err);
     res.status(500).json({ error: "Internal server error" });
   }
 }
