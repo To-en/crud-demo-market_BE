@@ -4,13 +4,15 @@ import Order from './orders.model.js';
 import User from './users.model.js';
 import School from './school.model.js';
 import Nutrition from './nutritions.model.js';
+import Category from './category.model.js';
 
 const db = {
   Ingre,
   Order,
   User,
   School,
-  Nutrition
+  Nutrition,
+  Category
 };
 
 // --- Foriegn key association
@@ -18,6 +20,10 @@ const db = {
 // ingredients <-> nutrition_facts (asd)
 Ingre.hasOne(Nutrition, { foreignKey: 'ingredientId', onDelete: 'CASCADE' });
 Nutrition.belongsTo(Ingre, { foreignKey: 'ingredientId', onDelete: 'CASCADE' });
+
+// category <-> ingredients
+Category.hasMany(Ingre, { foreignKey: 'categoryId' });
+Ingre.belongsTo(Category, { foreignKey: 'categoryId' });
 
 // users <-> orders ()
 User.hasMany(Order, { foreignKey: 'userId' });

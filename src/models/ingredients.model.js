@@ -21,9 +21,10 @@ const ingre_model = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true
     },
-    category: {
-      type: DataTypes.STRING,
-      allowNull: true
+    categoryId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      field: 'category_id'
     },
     unitPrice: {
       type: DataTypes.FLOAT,

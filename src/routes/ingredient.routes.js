@@ -4,7 +4,7 @@
  *   - name: Ingredients
  *     description: Browse and manage ingredients. Mounted at /api/ingredient
  *
- * /api/ingredient:
+ * /api/ingredients:
  *   get:
  *     tags: [Ingredients]
  *     summary: List all ingredients (paginated)
@@ -32,7 +32,7 @@
  *                   items:
  *                     $ref: '#/components/schemas/Ingredient'
  *
- * /api/ingredient/search:
+ * /api/ingredients/search:
  *   get:
  *     tags: [Ingredients]
  *     summary: Search/filter ingredients
@@ -71,7 +71,7 @@
  *                   items:
  *                     $ref: '#/components/schemas/Ingredient'
  *
- * /api/ingredient/create:
+ * /api/ingredients/create:
  *   post:
  *     tags: [Ingredients]
  *     summary: Create ingredient (admin only)
@@ -98,7 +98,7 @@
  *       400:
  *         description: Missing required field or invalid unit/category value
  *
- * /api/ingredient/{id}:
+ * /api/ingredients/{id}:
  *   put:
  *     tags: [Ingredients]
  *     summary: Update ingredient (admin only)
@@ -158,12 +158,11 @@ import { requireRole } from '../middleware/auth.middleware.js';
 import * as controller from '../controllers/ingredient.controller.js';
 const router = Router();
 
-router.get('/ingredient',        controller.listIngredients);
-router.get('/ingredient/search', controller.getIngredients);
+// Listing and searching route move to index.js to allow no auth usage
 
 // --- Admin
-router.post('/ingredient/create',   requireRole(2), controller.createIngredient);
-router.put('/ingredient/:id',       requireRole(2), controller.updateIngredient);
-router.delete('/ingredient/:id',    requireRole(2), controller.deleteIngredient);
+router.post('/ingredients/create',   requireRole(2), controller.createIngredient);
+router.put('/ingredients/:id',       requireRole(2), controller.updateIngredient);
+router.delete('/ingredients/:id',    requireRole(2), controller.deleteIngredient);
 
 export default router;

@@ -11,6 +11,11 @@ const logger = makeLogger(import.meta.url);
 export async function listOrders(req, res) {
   const page   = Math.max(1,   parseInt(req.query.page)  || 1);
   const limit  = Math.min(100, parseInt(req.query.limit) || 20);
+  logger.debug("listOrders auth user: %j", {
+    id: req.user?.id,
+    role: req.user?.role,
+    class: req.user?.class,
+  });
   const { where, include } = scopeQueryByClassroom(req.user);
 
   try {

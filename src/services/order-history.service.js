@@ -11,7 +11,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export function scopeQueryByClassroom(user, orderId = null) {
   const idClause = orderId ? { id: orderId } : {};
   if (user.role === 0) return { where: { ...idClause, userId: user.id }, include: [] };
-  if (user.role === 1) return { where: { ...idClause, '$User.class$': user.class }, include: [{ model: models.User, attributes: ['class'] }] };
+  if (user.role === 1) return { where: idClause, include: [{ model: models.User, attributes: ['class'], where: { class: user.class }, required: true }] };
   return { where: idClause, include: [] };  // admin: all
 }
 
@@ -55,4 +55,3 @@ export async function exportOrderCSV(data) {
 //     .replace('{{rows}}', rows)
 //     .replace('{{total}}', data.total);
 // }
-

@@ -1,11 +1,11 @@
-import { Op } from 'sequelize';
-import config from '../config.js';
+import { Op, col } from 'sequelize';
 import models from '../models/index.js';
-import * as service from '../services/ingredient.service.js';
 import makeLogger from '../logger.js';
 
 const logger = makeLogger(import.meta.url);
 
+const categoryInclude = { model: models.Category, attributes: [] };
+const withCategoryName = { include: [[col('category.name'), 'category']] };
 
 // GET /ingredient → all ingredients (paginated)
 // req.query always returns strings — parseInt before arithmetic; clamp prevents runaway DB scan
@@ -15,6 +15,8 @@ export async function listIngredients(req, res) {
 
   try {
     const { count, rows } = await models.Ingre.findAndCountAll({
+      attributes: withCategoryName,
+      include: categoryInclude,
       offset: (page - 1) * limit,
       limit,
     });
@@ -41,13 +43,17 @@ export async function getIngredients(req, res) {
   const limit = Math.min(100, parseInt(req.query.limit) || 15);
 
   const where = {};
-  if (category) where.category = category;
   if (q)        where.name = { [Op.iLike]: `%${q}%` };
   if (inStock === 'true') where.stock = { [Op.gt]: 0 };
 
   try {
     const { count, rows } = await models.Ingre.findAndCountAll({
       where,
+      attributes: withCategoryName,
+      include: {
+        ...categoryInclude,
+        where: category ? { name: category } : undefined,
+      },
       offset: (page - 1) * limit,
       limit,
     });
@@ -81,13 +87,16 @@ export async function createIngredient(req, res) {
     return res.status(400).json({ error: "name, unit, stock, category required" });
 
   try {
+    const cat = await models.Category.findOne({ where: { name: category } });
+    if (!cat) return res.status(400).json({ error: "Invalid category" });
+
     const item = await models.Ingre.create({
       name,
       unit,
       stock: Number(stock),
-      category
+      categoryId: cat.id,
     });
-    res.status(201).json(item);
+    res.status(201).json({ ...item.toJSON(), category });
   } catch (error) {
     logger.error("create ingredient failed: %s", error.message);
     res.status(500).json({ error: "Failed to create ingredient" });
@@ -103,13 +112,17 @@ export async function updateIngredient(req, res) {
   try {
     const ingredient = await models.Ingre.findOne({ where: { id: Number(req.params.id) } });
     if (!ingredient) return res.status(404).json({ error: "Ingredient not found" });
+
+    const cat = await models.Category.findOne({ where: { name: category } });
+    if (!cat) return res.status(400).json({ error: "Invalid category" });
+
     await ingredient.update({
       name,
       unit,
       stock: Number(stock),
-      category
+      categoryId: cat.id,
     });
-    res.status(200).json(ingredient);
+    res.status(200).json({ ...ingredient.toJSON(), category });
   } catch (error) {
     logger.error("update ingredient %s failed: %s", req.params.id, error.message);
     res.status(500).json({ error: "Failed to update ingredient" });

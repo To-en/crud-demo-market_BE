@@ -40,24 +40,25 @@ CREATE TABLE crud_market."users" (
 
 CREATE TABLE crud_market."ingredients" (
 	id              SERIAL PRIMARY KEY,
-	name            VARCHAR(255),       -- ✅ keep
-	unit            VARCHAR(50),        -- ✅ keep
-	stock           INTEGER,            -- ✅ keep (app logic)
-	category        VARCHAR(100),       -- ✅ keep → map from OFF categories
-	unit_price      FLOAT,              -- ✅ keep (your own pricing)
-	image_url       VARCHAR(255),       -- ✅ keep → can pull from OFF image_url
-	barcode         TEXT,               -- traceability / supply chain
-	brand           VARCHAR(255),       -- nice for inventory source tracking
-	quantity        VARCHAR(100),       -- "500g", "1L" — package size
-	allergens       TEXT[],             -- useful for menu system later
-	labels          TEXT[],             -- halal, organic, etc.
-	ingredients_raw TEXT,               -- raw ingredient string (optional)
-	country_origin  VARCHAR(100),       -- sourcing context
-	off_id          TEXT,               -- reference back to OFF if needed
-	CREATED_DATE 		TIMESTAMP,
-	LAST_MODIFIED 	TIMESTAMP,
-	DELETE_AT   		TIMESTAMP
+	name            VARCHAR(255),
+	unit            VARCHAR(50),
+	stock           INTEGER,
+	category_id     INTEGER REFERENCES crud_market.category(id),
+	unit_price      FLOAT,
+	image_url       VARCHAR(255),
+	barcode         TEXT,
+	brand           VARCHAR(255),
+	quantity        VARCHAR(100),
+	allergens       TEXT[],
+	labels          TEXT[],
+	ingredients_raw TEXT,
+	country_origin  VARCHAR(100),
+	off_id          TEXT,
+	CREATED_DATE    TIMESTAMP,
+	LAST_MODIFIED   TIMESTAMP,
+	DELETE_AT       TIMESTAMP
 );
+
 
 
 CREATE TABLE crud_market."nutrition_facts" (
@@ -94,4 +95,13 @@ CREATE TABLE crud_market."orders" (
 	CREATED_DATE 	TIMESTAMP,
 	LAST_MODIFIED TIMESTAMP,
 	DELETE_AT   	TIMESTAMP
+);
+
+
+
+
+-- Master category table
+CREATE TABLE crud_market.category (
+    id      SERIAL PRIMARY KEY,
+    name    VARCHAR(100) UNIQUE NOT NULL
 );

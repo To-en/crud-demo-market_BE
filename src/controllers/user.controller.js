@@ -32,7 +32,7 @@ export async function userLogin(req, res) {
     const refreshToken = await service.signRefreshToken(dbUser.id, role);
 
     res.status(200).json(
-      { userName: dbUser, 
+      { userName: username, 
         role, 
         accessToken, 
         refreshToken });
