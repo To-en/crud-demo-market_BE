@@ -4,6 +4,9 @@ import config from '../config.js';
 import models from '../models/index.js';
 import * as service from '../services/user.service.js';
 import { distributeBudget } from '../services/budget.service.js';
+import makeLogger from '../logger.js';
+
+const logger = makeLogger(import.meta.url);
 
 
 // POST /api/auth/login
@@ -34,7 +37,7 @@ export async function userLogin(req, res) {
         accessToken, 
         refreshToken });
   } catch (err) {
-    console.error('Login error:', err);
+    logger.error("login failed for %s: %s", username, err.message);
     res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -52,6 +55,7 @@ export async function userLogout(req, res) {
     );
     res.status(200).json({ message: "Logged out" });
   } catch (err) {
+    logger.error("logout failed: %s", err.message);
     res.status(500).json({ error: "Logout failed" });
   }
 }
@@ -76,6 +80,7 @@ export async function userRefresh(req, res) {
     // Give back to renew accessToken to user
     res.status(200).json({ accessToken });
   } catch (err) {
+    logger.debug("refresh token rejected: %s", err.message);
     res.status(401).json({ error: "Refresh token expired or invalid" });
   }
 }
@@ -117,7 +122,7 @@ export async function userRegister(req, res) {
         accessToken,
         refreshToken });
   } catch (err) {
-    console.error('Register error:', err);
+    logger.error("register failed for %s: %s", username, err.message);
     res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -130,7 +135,7 @@ export async function listClassrooms(_req, res) {
     });
     res.status(200).json(classrooms);
   } catch (err) {
-    console.error('Classroom list error:', err);
+    logger.error("classroom list failed: %s", err.message);
     res.status(500).json({ error: "Internal server error" });
   }
 }
@@ -146,7 +151,7 @@ export async function triggerDistribute(req, res) {
     const result = await distributeBudget(Number(departmentId));
     res.status(200).json({ status: 200, ...result });
   } catch (err) {
-    console.error('Distribute error:', err);
+    logger.error("distribute budget for dept %s failed: %s", departmentId, err.message);
     res.status(500).json({ error: "Failed to distribute budget" });
   }
 }

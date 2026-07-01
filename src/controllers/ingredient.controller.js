@@ -2,6 +2,9 @@ import { Op } from 'sequelize';
 import config from '../config.js';
 import models from '../models/index.js';
 import * as service from '../services/ingredient.service.js';
+import makeLogger from '../logger.js';
+
+const logger = makeLogger(import.meta.url);
 
 
 // GET /ingredient → all ingredients (paginated)
@@ -23,6 +26,7 @@ export async function listIngredients(req, res) {
       data: rows,
     });
   } catch (error) {
+    logger.error("fetch ingredients failed: %s", error.message);
     res.status(500).json({ error: "Failed to fetch ingredients" });
   }
 }
@@ -55,6 +59,7 @@ export async function getIngredients(req, res) {
       data: rows,
     });
   } catch (error) {
+    logger.error("fetch ingredients failed: %s", error.message);
     res.status(500).json({ error: "Failed to fetch ingredients" });
   }
 }
@@ -84,6 +89,7 @@ export async function createIngredient(req, res) {
     });
     res.status(201).json(item);
   } catch (error) {
+    logger.error("create ingredient failed: %s", error.message);
     res.status(500).json({ error: "Failed to create ingredient" });
   }
 }
@@ -105,6 +111,7 @@ export async function updateIngredient(req, res) {
     });
     res.status(200).json(ingredient);
   } catch (error) {
+    logger.error("update ingredient %s failed: %s", req.params.id, error.message);
     res.status(500).json({ error: "Failed to update ingredient" });
   }
 }
@@ -117,6 +124,7 @@ export async function deleteIngredient(req, res) {
     await ingredient.destroy();
     res.status(200).json({ message: "Deleted", ingredient });
   } catch (error) {
+    logger.error("delete ingredient %s failed: %s", req.params.id, error.message);
     res.status(500).json({ error: error.message });
   }
 }

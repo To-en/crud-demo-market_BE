@@ -5,7 +5,10 @@ dotenvExpand.expand(myEnv);
 
 export default {
   log: {
-    level: process.env.LOG_LEVEL || "info",
+    level: process.env.LOG_LEVEL || "info", 
+    // default info log level includes features:
+      // 1.
+      // 2.
   },
   port: process.env.PORT || 3000,
   database: {

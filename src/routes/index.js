@@ -138,7 +138,9 @@ import { readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { validate, requireRole } from '../middleware/auth.middleware.js';
 import * as Login from '../controllers/user.controller.js';
+import makeLogger from '../logger.js';
 
+const logger = makeLogger(import.meta.url);
 const rootRouter = Router();
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -161,9 +163,9 @@ for (const file of readdirSync(__dirname)) {
     const mod = await import(join(__dirname, file));
     const subRouter = mod.default ?? mod;
     rootRouter.use(subRouter);
-    console.log(`[Route Loaded]: ${file}`);
+    logger.info("route loaded: %s", file);
   } catch (err) {
-    console.error(`[Route Error]: Could not load "${file}": ${err.message}`);
+    logger.error("could not load route %s: %s", file, err.message);
   }
 }
 

@@ -4,6 +4,8 @@
 import models from '../models/index.js';
 import * as service from '../services/budget.service.js';
 import { scopeQueryByClassroom } from '../services/order-history.service.js';
+import makeLogger from '../logger.js';
+const logger = makeLogger(import.meta.url);   // label = [order.controller]
 
 // POST /order/create → student submits an order (status stays pending)
 // Budget deduction deferred to confirmation — never deduct optimistically on create
@@ -36,6 +38,7 @@ export async function submitOrder(req, res) {
 
     res.status(201).json(order);
   } catch (error) {
+    logger.error("submitOrder failed for user %s: %s", req.user?.id, error.message);
     res.status(500).json({ error: "Failed to create order" });
   }
 }
@@ -62,6 +65,7 @@ export async function updateOrderStatus(req, res) {
     await order.update({ status, lastModified: new Date() });
     res.status(200).json(order);
   } catch (error) {
+    logger.error("order %s status→%s failed: %s", req.params.id, status, error.message);
     res.status(500).json({ error: "Failed to update order status" });
   }
 }

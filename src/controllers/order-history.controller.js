@@ -2,6 +2,9 @@ import { Op } from 'sequelize'
 import models from '../models/index.js';
 import * as service from '../services/order-history.service.js'
 const { scopeQueryByClassroom } = service;
+import makeLogger from '../logger.js';
+
+const logger = makeLogger(import.meta.url);
 
 // GET /order?page=1&limit=20 → paginated order list, scoped by role
 // scopeQueryByClassroom injects where+include so students only see own orders, teachers see their class
@@ -21,6 +24,7 @@ export async function listOrders(req, res) {
     });
     res.status(200).json({ total: count, page, limit, data: rows });
   } catch (error) {
+    logger.error("listOrders failed: %s", error.message);
     res.status(500).json({ error: "Failed to fetch orders" });
   }
 }
@@ -55,6 +59,7 @@ export async function searchOrder(req, res) {
     });
     res.status(200).json({ total: count, page, limit, data: rows });
   } catch (error) {
+    logger.error("searchOrder failed: %s", error.message);
     res.status(500).json({ error: "Search failed" });
   }
 }
@@ -82,6 +87,7 @@ export async function editOrder(req, res) {
 
     res.status(200).json(order);
   } catch (error) {
+    logger.error("editOrder %s failed: %s", req.params.id, error.message);
     res.status(500).json({ error: "Failed to update order" });
   }
 }
@@ -120,6 +126,7 @@ export async function openOrderBill(req, res) {
 
     res.status(200).json({ ...order.toJSON(), items });
   } catch (error) {
+    logger.error("openOrderBill %s failed: %s", req.params.id, error.message);
     res.status(500).json({ error: "Failed to fetch order bill" });
   }
 }
@@ -172,6 +179,7 @@ export async function exportOrderBill(req, res) {
 
     res.status(400).json({ error: "Unsupported export format" });
   } catch (error) {
+    logger.error("exportOrderBill %s failed: %s", req.params.id, error.message);
     res.status(500).json({ error: "Failed to export order bill" });
   }
 }
@@ -184,6 +192,7 @@ export async function deleteOrder(req, res) {
     await order.destroy();
     res.status(200).json({ message: 'Deleted' });
   } catch (error) {
+    logger.error("deleteOrder %s failed: %s", req.params.id, error.message);
     res.status(500).json({ error: 'Failed to delete order' });
   }
 }

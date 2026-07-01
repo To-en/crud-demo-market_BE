@@ -66,4 +66,3 @@ const options = {
 };
 
 export const swaggerSpec = swaggerJsdoc(options);
-export const swaggerBaseUrl = options.definition.servers[0].url;
